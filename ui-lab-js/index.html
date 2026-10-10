@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RoomBook — бронирование аудиторий</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="header">
+    <div class="brand">RoomBook</div>
+    <nav class="nav" aria-label="Основная навигация" id="mainNav" hidden>
+      <button class="nav-link active" data-page="listPage">Брони</button>
+      <button class="nav-link" data-page="createPage">Создать бронь</button>
+      <button class="nav-link" data-page="calendarPage">Календарь</button>
+      <button class="nav-link" data-page="adminPage" id="adminNavLink" hidden>Админка</button>
+    </nav>
+    <div class="role-block" id="roleBlock" hidden>
+      <div class="notif-wrap" id="notifWrap">
+        <button id="notifBell" class="notif-bell" type="button" aria-label="Уведомления">
+          🔔
+          <span id="notifCount" class="notif-count" hidden>0</span>
+        </button>
+        <div id="notifDropdown" class="notif-dropdown" hidden>
+          <div class="notif-header">
+            <span>Уведомления</span>
+            <button id="notifMarkAll" class="notif-mark-all" type="button">Прочитать все</button>
+          </div>
+          <div id="notifList" class="notif-list">
+            <p class="notif-empty">Загрузка...</p>
+          </div>
+        </div>
+      </div>
+      <span id="userInfo">—</span>
+      <button id="logoutButton" class="button button-secondary">Выйти</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="loginPage" class="page auth-page">
+      <h1>Вход</h1>
+      <p>Войдите, чтобы управлять бронями.</p>
+      <form id="loginForm" class="auth-form" novalidate>
+        <div class="field">
+          <label for="loginEmail">Email <span class="required">*</span></label>
+          <input id="loginEmail" name="email" type="email" required autocomplete="email">
+          <div class="field-error" id="loginEmailError"></div>
+        </div>
+        <div class="field">
+          <label for="loginPassword">Пароль <span class="required">*</span></label>
+          <input id="loginPassword" name="password" type="password" required autocomplete="current-password">
+          <div class="field-error" id="loginPasswordError"></div>
+        </div>
+        <div class="actions">
+          <button id="loginSubmit" class="button button-primary" type="submit">Войти</button>
+          <button class="button button-secondary" type="button" data-page="registerPage">Регистрация</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="registerPage" class="page auth-page" hidden>
+      <h1>Регистрация</h1>
+      <p>Создайте аккаунт пользователя.</p>
+      <form id="registerForm" class="auth-form" novalidate>
+        <div class="field">
+          <label for="regName">Имя <span class="required">*</span></label>
+          <input id="regName" name="fullName" type="text" required maxlength="80">
+          <div class="field-error" id="regNameError"></div>
+        </div>
+        <div class="field">
+          <label for="regEmail">Email <span class="required">*</span></label>
+          <input id="regEmail" name="email" type="email" required autocomplete="email">
+          <div class="field-error" id="regEmailError"></div>
+        </div>
+        <div class="field">
+          <label for="regPassword">Пароль <span class="required">*</span></label>
+          <input id="regPassword" name="password" type="password" required minlength="6" autocomplete="new-password">
+          <div class="field-hint">Минимум 6 символов.</div>
+          <div class="field-error" id="regPasswordError"></div>
+        </div>
+        <div class="field">
+          <label for="regPassword2">Повторите пароль <span class="required">*</span></label>
+          <input id="regPassword2" name="password2" type="password" required minlength="6" autocomplete="new-password">
+          <div class="field-error" id="regPassword2Error"></div>
+        </div>
+        <div class="actions">
+          <button id="registerSubmit" class="button button-primary" type="submit">Создать аккаунт</button>
+          <button class="button button-secondary" type="button" data-page="loginPage">У меня есть аккаунт</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="listPage" class="page" hidden>
+      <div class="page-title-row">
+        <div>
+          <h1>Брони</h1>
+          <p id="listSubtitle">Ваши брони аудиторий.</p>
+        </div>
+        <button id="openCreateButton" class="button button-primary">Создать бронь</button>
+      </div>
+
+      <div class="list-filters">
+        <input id="searchInput" type="text" placeholder="Поиск по назначению или аудитории..." class="search-input">
+        <select id="statusFilter" class="status-filter">
+          <option value="">Все статусы</option>
+          <option value="На подтверждении">На подтверждении</option>
+          <option value="Подтверждено">Подтверждено</option>
+          <option value="Отменено">Отменено</option>
+        </select>
+      </div>
+
+      <div id="bookingList"></div>
+    </section>
+
+    <section id="createPage" class="page" hidden>
+      <h1>Новая бронь</h1>
+      <p>Заполните обязательные поля.</p>
+      <form id="bookingForm" novalidate>
+        <div class="field">
+          <label for="room">Аудитория <span class="required">*</span></label>
+          <select id="room" name="room" required>
+            <option value="">Выберите аудиторию</option>
+            <option>А-301</option>
+            <option>А-302</option>
+            <option>Б-214</option>
+            <option>Б-215</option>
+            <option>В-101</option>
+          </select>
+          <div class="field-error" id="roomError"></div>
+        </div>
+        <div class="field">
+          <label for="date">Дата <span class="required">*</span></label>
+          <input id="date" name="date" type="date" required>
+          <div class="field-error" id="dateError"></div>
+        </div>
+        <div class="field">
+          <label for="startTime">Время начала <span class="required">*</span></label>
+          <input id="startTime" name="startTime" type="time" required>
+          <div class="field-error" id="startTimeError"></div>
+        </div>
+        <div class="field">
+          <label for="endTime">Время окончания <span class="required">*</span></label>
+          <input id="endTime" name="endTime" type="time" required>
+          <div class="field-error" id="endTimeError"></div>
+        </div>
+        <div class="field">
+          <label for="purpose">Назначение <span class="required">*</span></label>
+          <textarea id="purpose" name="purpose" rows="4" required minlength="5"></textarea>
+          <div class="field-hint">Минимум 5 символов.</div>
+          <div class="field-error" id="purposeError"></div>
+        </div>
+        <div class="actions">
+          <button id="submitButton" class="button button-primary" type="submit">Создать бронь</button>
+          <button class="button button-secondary" type="button" data-page="listPage">Отмена</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="detailPage" class="page" hidden>
+      <div id="bookingDetails"></div>
+      <div id="bookingHistory"></div>
+      <div class="actions">
+        <button class="button button-primary" type="button" data-page="listPage">Главная страница</button>
+      </div>
+    </section>
+
+    <section id="calendarPage" class="page" hidden>
+      <div class="page-title-row">
+        <div>
+          <h1>Календарь занятости</h1>
+          <p>Занятость аудиторий по получасовым слотам. Кликните на занятый слот, чтобы открыть бронь.</p>
+        </div>
+      </div>
+
+      <div class="list-filters">
+        <label for="calendarDate" style="font-weight: 700;">Дата:</label>
+        <input id="calendarDate" type="date" class="status-filter" style="max-width: 220px;">
+      </div>
+
+      <div id="calendarGrid" class="calendar-grid"></div>
+
+      <div class="calendar-legend">
+        <span class="legend-item"><span class="legend-box legend-pending"></span> На подтверждении</span>
+        <span class="legend-item"><span class="legend-box legend-confirmed"></span> Подтверждено</span>
+        <span class="legend-item"><span class="legend-box legend-cancelled"></span> Отменено</span>
+        <span class="legend-item"><span class="legend-box legend-free"></span> Свободно</span>
+      </div>
+    </section>
+
+    <section id="adminPage" class="page" hidden>
+      <h1>Админ-панель</h1>
+      <p>Сводка по текущим данным.</p>
+
+      <div class="list-filters">
+        <select id="adminStatusFilter" class="status-filter">
+          <option value="">Все статусы</option>
+          <option value="На подтверждении">На подтверждении</option>
+          <option value="Подтверждено">Подтверждено</option>
+          <option value="Отменено">Отменено</option>
+        </select>
+      </div>
+
+      <div class="admin-grid" id="adminGrid"></div>
+
+      <h2 style="margin-top: 40px;">Брони по статусам</h2>
+      <div class="chart-wrap">
+        <canvas id="chartStatuses"></canvas>
+      </div>
+
+      <h2 style="margin-top: 40px;">Брони по аудиториям</h2>
+      <div class="chart-wrap">
+        <canvas id="chartRooms"></canvas>
+      </div>
+
+      <h2 style="margin-top: 40px;">Все брони</h2>
+      <div id="adminBookingList"></div>
+
+      <h2 style="margin-top: 40px;">Пользователи</h2>
+      <div id="adminUsersList"></div>
+    </section>
+
+    <section id="userProfilePage" class="page" hidden>
+      <div id="userProfile"></div>
+      <div class="actions">
+        <button class="button button-secondary" type="button" id="backToAdminButton">Назад в админку</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="successOverlay" class="overlay" hidden>
+    <div class="overlay-box">
+      <button class="overlay-close" data-close-overlay="successOverlay" type="button">×</button>
+      <p id="successMessage" class="overlay-text">Готово.</p>
+    </div>
+  </div>
+
+  <div id="errorOverlay" class="overlay" hidden>
+    <div class="overlay-box">
+      <button class="overlay-close" data-close-overlay="errorOverlay" type="button">×</button>
+      <p id="errorMessage" class="overlay-text">Ошибка.</p>
+    </div>
+  </div>
+
+  <dialog id="confirmDialog" class="dialog">
+    <h2 id="confirmTitle">Отменить бронь?</h2>
+    <p id="confirmText">После подтверждения статус будет изменён на «Отменено».</p>
+    <div class="actions">
+      <button id="confirmActionButton" class="button button-primary" type="button">Подтвердить</button>
+      <button id="closeDialogButton" class="button button-secondary" type="button">Назад</button>
+    </div>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

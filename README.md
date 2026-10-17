@@ -40,24 +40,24 @@
 
 База данных построена на PostgreSQL (Supabase) и состоит из 4 связанных таблиц:
 
-```mermaid
 erDiagram
-    profiles ||--o{ bookings : "создает"
-    rooms ||--o{ bookings : "бронируется"
-    bookings ||--o{ status_history : "имеет историю"
-
-    rooms {
-        bigint id PK
-        text name
-        text building
-        int capacity
-    }
+    profiles ||--o{ bookings : "создает (id -> user_id)"
+    rooms ||--o{ bookings : "выбрана (id -> room_id)"
+    bookings ||--o{ status_history : "имеет историю (id -> booking_id)"
+    profiles ||--o{ status_history : "изменил (id -> changed_by)"
 
     profiles {
         uuid id PK
         text email
         text full_name
         text role
+    }
+
+    rooms {
+        bigint id PK
+        text name
+        text building
+        int capacity
     }
 
     bookings {
@@ -76,8 +76,8 @@ erDiagram
     status_history {
         bigint id PK
         bigint booking_id FK
+        uuid changed_by FK
         text old_status
         text new_status
-        uuid changed_by FK
         timestamp changed_at
     }
